@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JournalT</title>
+    <style>
+        :root {
+          --bg: #0e0e10;
+          --surface: #17171a;
+          --card: #1f1f24;
+          --border: #2e2e35;
+          --border-soft: #26262d;
+          --text: #f0f0f2;
+          --text-secondary: #8a8a99;
+          --text-muted: #55555f;
+          --accent: #7c6fff;
+          --accent-soft: #7c6fff22;
+          --accent-hover: #6b5eee;
+          --success: #3ecf8e;
+          --success-soft: #3ecf8e18;
+          --danger: #f56565;
+          --danger-soft: #f5656518;
+          --warning: #f6c944;
+          --warning-soft: #f6c94418;
+          --happy: #3ecf8e;
+          --sad: #60a5fa;
+          --angry: #f56565;
+          --anxious: #f6c944;
+          --radius: 10px;
+          --radius-lg: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+          font-family: 'Inter', system-ui, sans-serif;
+          background: var(--bg);
+          color: var(--text);
+          min-height: 100vh;
+          font-size: 15px;
+          line-height: 1.6;
+        }
+
+        /* ── Layout ── */
+        .app { display: flex; min-height: 100vh; }
+
+        .sidebar {
+          width: 240px;
+          background: var(--surface);
+          border-right: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          padding: 24px 0;
+          position: fixed;
+          top: 0; left: 0; bottom: 0;
+          z-index: 100;
+          transition: transform .2s ease;
+        }
+
+        .sidebar-logo {
+          padding: 0 20px 24px;
+          border-bottom: 1px solid var(--border-soft);
+          margin-bottom: 16px;
+        }
+
+        .logo-text {
+          font-size: 20px;
+          font-weight: 700;
+          letter-spacing: -0.5px;
+          background: linear-gradient(135deg, var(--accent), #c084fc);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .logo-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .nav { flex: 1; padding: 0 12px; }
+
+        .nav-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 9px 12px;
+          border-radius: var(--radius);
+          cursor: pointer;
+          color: var(--text-secondary);
+          font-size: 14px;
+          font-weight: 500;
+          transition: all .15s ease;
+          margin-bottom: 2px;
+          border: none;
+          background: none;
+          width: 100%;
+          text-align: left;
+        }
+
+        .nav-item:hover { background: var(--card); color: var(--text); }
+        .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+
+        .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .nav-section-label {
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: var(--text-muted);
+          padding: 12px 12px 6px;
+        }
+
+        .sidebar-footer {
+          padding: 16px 12px 0;
+          border-top: 1px solid var(--border-soft);
+          margin-top: 12px;
+        }
+
+        .user-chip {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border-radius: var(--radius);
+          background: var(--card);
+          cursor: pointer;
+        }
+
+        .avatar {
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: var(--accent-soft);
+          border: 1.5px solid var(--accent);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 13px; font-weight: 600; color: var(--accent);
+          flex-shrink: 0;
+        }
+
+        .user-name { font-size: 13px; font-weight: 500; }
+        .user-role { font-size: 11px; color: var(--text-muted); }
+
+        /* ── Main content ── */
+        .main { margin-left: 240px; flex: 1; }
+
+        .topbar {
+          height: 60px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          padding: 0 28px;
+          gap: 12px;
+          background: var(--surface);
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
+
+        .topbar-title { font-size: 16px; font-weight: 600; flex: 1; }
+
+        .weather-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 20px;
+          padding: 5px 14px;
+          font-size: 13px;
+          color: var(--text-secondary);
+        }
+
+        .content { padding: 28px; max-width: 900px; }
+
+        /* ── Auth page ── */
+        .auth-page {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg);
+        }
+
+        .auth-card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 40px;
+          width: 100%;
+          max-width: 420px;
+        }
+
+        .auth-header { text-align: center; margin-bottom: 32px; }
+        .auth-title { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+        .auth-title span { background: linear-gradient(135deg, var(--accent), #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 6px; }
+
+        /* ── Forms ── */
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+
+        .form-input, .form-textarea, .form-select {
+          width: 100%;
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 10px 14px;
+          color: var(--text);
+          font-size: 14px;
+          font-family: inherit;
+          transition: border-color .15s;
+          outline: none;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .form-textarea { resize: vertical; min-height: 120px; }
+
+        .form-select { appearance: none; cursor: pointer; }
+
+        /* ── Buttons ── */
+        .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          padding: 10px 18px;
+          border-radius: var(--radius);
+          font-size: 14px;
+          font-weight: 500;
+          font-family: inherit;
+          cursor: pointer;
+          transition: all .15s ease;
+          border: none;
+          text-decoration: none;
+        }
+
+        .btn-primary {
+          background: var(--accent);
+          color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        .btn-secondary {
+          background: var(--card);
+          color: var(--text);
+          border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn-danger {
+          background: var(--danger-soft);
+          color: var(--danger);
+          border: 1px solid transparent;
+        }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+
+        .btn-ghost { background: none; color: var(--text-secondary); border: 1px solid var(--border); }
+        .btn-ghost:hover { color: var(--text); border-color: var(--border); background: var(--card); }
+
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        .btn-full { width: 100%; }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Pages ── */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* ── Section headers ── */
+        .section-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 24px;
+        }
+
+        .section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+        .section-subtitle { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+        /* ── Journal entries ── */
+        .entry-grid { display: flex; flex-direction: column; gap: 12px; }
+
+        .entry-card {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 20px;
+          transition: border-color .15s;
+          position: relative;
+        }
+
+        .entry-card:hover { border-color: var(--border); }
+
+        .entry-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+        .entry-title { font-size: 16px; font-weight: 600; line-height: 1.4; }
+        .entry-meta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .entry-date { font-size: 12px; color: var(--text-muted); }
+        .entry-content { color: var(--text-secondary); font-size: 14px; line-height: 1.7; margin-bottom: 14px; }
+
+        .entry-footer { display: flex; align-items: center; justify-content: space-between; }
+
+        .entry-actions { display: flex; gap: 6px; }
+
+        /* ── Sentiment badges ── */
+        .sentiment-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 10px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.3px;
+          text-transform: uppercase;
+        }
+
+        .sentiment-HAPPY { background: #3ecf8e18; color: #3ecf8e; }
+        .sentiment-SAD { background: #60a5fa18; color: #60a5fa; }
+        .sentiment-ANGRY { background: #f5656518; color: #f56565; }
+        .sentiment-ANXIOUS { background: #f6c94418; color: #f6c944; }
+
+        /* ── Stats ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 28px; }
+
+        .stat-card {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 18px 20px;
+        }
+
+        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 28px; font-weight: 700; margin-top: 4px; letter-spacing: -1px; }
+        .stat-accent { color: var(--accent); }
+        .stat-success { color: var(--success); }
+        .stat-warning { color: var(--warning); }
+
+        /* ── Modal ── */
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,.65);
+          z-index: 200;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          backdrop-filter: blur(4px);
+        }
+
+        .modal {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 28px;
+          width: 100%;
+          max-width: 520px;
+          max-height: 90vh;
+          overflow-y: auto;
+        }
+
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .modal-title { font-size: 18px; font-weight: 700; }
+        .modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 20px; line-height: 1; }
+        .modal-close:hover { color: var(--text); }
+
+        .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+        /* ── Toast ── */
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+
+        .toast {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: 12px 18px;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 240px;
+          animation: slideIn .2s ease;
+          box-shadow: 0 4px 24px rgba(0,0,0,.3);
+        }
+
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error .toast-icon { color: var(--danger); }
+
+        @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ── Empty state ── */
+        .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          color: var(--text-muted);
+        }
+
+        .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+        .empty-title { font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .empty-text { font-size: 14px; margin-bottom: 20px; }
+
+        /* ── Users table (admin) ── */
+        .table-wrap { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th {
+          text-align: left;
+          padding: 10px 16px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--text-muted);
+          border-bottom: 1px solid var(--border);
+        }
+
+        td {
+          padding: 13px 16px;
+          border-bottom: 1px solid var(--border-soft);
+          color: var(--text);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--card); }
+
+        .roles-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .role-badge {
+          font-size: 10px;
+          font-weight: 600;
+          padding: 2px 8px;
+          border-radius: 20px;
+          text-transform: uppercase;
+        }
+
+        .role-USER { background: var(--accent-soft); color: var(--accent); }
+        .role-ADMIN { background: var(--danger-soft); color: var(--danger); }
+
+        /* ── Toggle ── */
+        .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+
+        .toggle {
+          position: relative;
+          width: 40px; height: 22px;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+          position: absolute;
+          inset: 0;
+          background: var(--border);
+          border-radius: 11px;
+          transition: .2s;
+        }
+
+        .toggle-slider::before {
+          content: '';
+          position: absolute;
+          width: 16px; height: 16px;
+          background: white;
+          border-radius: 50%;
+          left: 3px; top: 3px;
+          transition: .2s;
+        }
+
+        .toggle input:checked + .toggle-slider { background: var(--accent); }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+        /* ── Auth tabs ── */
+        .auth-tabs { display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+        .auth-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--text-secondary); background: none; border: none; transition: all .15s; }
+        .auth-tab.active { background: var(--accent); color: #fff; }
+
+        /* ── Loader ── */
+        .spinner {
+          width: 18px; height: 18px;
+          border: 2px solid var(--border);
+          border-top-color: var(--accent);
+          border-radius: 50%;
+          animation: spin .6s linear infinite;
+          display: inline-block;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-overlay {
+          display: flex; align-items: center; justify-content: center;
+          padding: 40px;
+        }
+
+        /* ── Auth link ── */
+        .auth-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-secondary); }
+        .auth-link a { color: var(--accent); cursor: pointer; text-decoration: none; }
+
+        /* ── Profile page ── */
+        .profile-section {
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 24px;
+          margin-bottom: 16px;
+        }
+
+        .profile-section-title { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .danger-zone { border-color: var(--danger); }
+        .danger-zone .profile-section-title { color: var(--danger); }
+
+        /* ── Sentiment filter ── */
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-chip {
+          padding: 5px 14px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 500;
+          cursor: pointer;
+          border: 1px solid var(--border);
+          background: none;
+          color: var(--text-secondary);
+          transition: all .15s;
+        }
+        .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+        .filter-chip.sentiment-filter-HAPPY.active { border-color: var(--happy); color: var(--happy); background: #3ecf8e18; }
+        .filter-chip.sentiment-filter-SAD.active { border-color: var(--sad); color: var(--sad); background: #60a5fa18; }
+        .filter-chip.sentiment-filter-ANGRY.active { border-color: var(--angry); color: var(--angry); background: #f5656518; }
+        .filter-chip.sentiment-filter-ANXIOUS.active { border-color: var(--anxious); color: var(--anxious); background: #f6c94418; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+          .sidebar { transform: translateX(-100%); }
+          .sidebar.open { transform: translateX(0); }
+          .main { margin-left: 0; }
+          .stats-grid { grid-template-columns: 1fr 1fr; }
+          .content { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ──────────────── AUTH PAGE ──────────────── -->
+<div id="authPage" class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-title">Journal<span>T</span></div>
+            <div class="auth-subtitle">Your private space to write and reflect</div>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">Sign in</button>
+            <button class="auth-tab" onclick="switchAuthTab('signup')">Create account</button>
+        </div>
+
+        <!-- Login form -->
+        <div id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" id="loginUsername" type="text" placeholder="your_username" autocomplete="username" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input class="form-input" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
+            </div>
+            <button class="btn btn-primary btn-full" id="loginBtn" onclick="handleLogin()">Sign in</button>
+        </div>
+
+        <!-- Signup form -->
+        <div id="signupForm" style="display:none;">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input class="form-input" id="signupUsername" type="text" placeholder="choose_a_username" autocomplete="username" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                <input class="form-input" id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input class="form-input" id="signupPassword" type="password" placeholder="••••••••" autocomplete="new-password" />
+            </div>
+            <button class="btn btn-primary btn-full" id="signupBtn" onclick="handleSignup()">Create account</button>
+        </div>
+    </div>
+</div>
+
+<!-- ──────────────── MAIN APP ──────────────── -->
+<div id="mainApp" class="app" style="display:none;">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-text">JournalT</div>
+            <div class="logo-sub">Personal Journal App</div>
+        </div>
+
+        <nav class="nav">
+            <div class="nav-section-label">Main</div>
+            <button class="nav-item active" onclick="navigateTo('dashboard')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" onclick="navigateTo('journal')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                My Journal
+            </button>
+            <button class="nav-item" onclick="navigateTo('profile')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                Profile
+            </button>
+
+            <div class="nav-section-label" id="adminNavLabel" style="display:none;">Admin</div>
+            <button class="nav-item" id="adminNavBtn" onclick="navigateTo('admin')" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                All Users
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-chip">
+                <div class="avatar" id="sidebarAvatar">U</div>
+                <div>
+                    <div class="user-name" id="sidebarUsername">User</div>
+                    <div class="user-role" id="sidebarRole">Member</div>
+                </div>
+            </div>
+            <button class="btn btn-ghost btn-full" style="margin-top:10px;font-size:13px;" onclick="handleLogout()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sign out
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="topbar">
+            <div class="topbar-title" id="topbarTitle">Dashboard</div>
+            <div class="weather-badge" id="weatherBadge" style="display:none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>
+                <span id="weatherText">—</span>
+            </div>
+        </div>
+
+        <div class="content">
+
+            <!-- ── Dashboard ── -->
+            <div id="dashboardPage" class="page active">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Welcome back 👋</div>
+                        <div class="section-subtitle" id="greetingText">Loading your journal…</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openEntryModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New entry
+                    </button>
+                </div>
+
+                <div class="stats-grid" id="dashboardStats">
+                    <div class="stat-card"><div class="stat-label">Total entries</div><div class="stat-value stat-accent" id="statTotal">—</div></div>
+                    <div class="stat-card"><div class="stat-label">This week</div><div class="stat-value stat-success" id="statWeek">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Top sentiment</div><div class="stat-value" id="statSentiment" style="font-size:18px;margin-top:8px;">—</div></div>
+                    <div class="stat-card"><div class="stat-label">Latest entry</div><div class="stat-value" id="statLatest" style="font-size:14px;font-weight:500;margin-top:8px;color:var(--text-secondary);">—</div></div>
+                </div>
+
+                <div class="section-header" style="margin-top:8px;">
+                    <div class="section-title" style="font-size:16px;">Recent entries</div>
+                </div>
+                <div id="recentEntries"><div class="loading-overlay"><div class="spinner"></div></div></div>
+            </div>
+
+            <!-- ── Journal ── -->
+            <div id="journalPage" class="page">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">My Journal</div>
+                        <div class="section-subtitle">All your entries in one place</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openEntryModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New entry
+                    </button>
+                </div>
+
+                <div class="filter-bar">
+                    <button class="filter-chip active" data-filter="ALL" onclick="setFilter('ALL', this)">All</button>
+                    <button class="filter-chip sentiment-filter-HAPPY" data-filter="HAPPY" onclick="setFilter('HAPPY', this)">😊 Happy</button>
+                    <button class="filter-chip sentiment-filter-SAD" data-filter="SAD" onclick="setFilter('SAD', this)">😔 Sad</button>
+                    <button class="filter-chip sentiment-filter-ANGRY" data-filter="ANGRY" onclick="setFilter('ANGRY', this)">😠 Angry</button>
+                    <button class="filter-chip sentiment-filter-ANXIOUS" data-filter="ANXIOUS" onclick="setFilter('ANXIOUS', this)">😰 Anxious</button>
+                </div>
+
+                <div id="journalEntries"><div class="loading-overlay"><div class="spinner"></div></div></div>
+            </div>
+
+            <!-- ── Profile ── -->
+            <div id="profilePage" class="page">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">Profile</div>
+                        <div class="section-subtitle">Manage your account settings</div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="profile-section-title">Account info</div>
+                    <div class="form-group">
+                        <label class="form-label">New username</label>
+                        <input class="form-input" id="profileUsername" type="text" placeholder="new_username" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New password</label>
+                        <input class="form-input" id="profilePassword" type="password" placeholder="new password" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Sentiment analysis emails</label>
+                        <div class="toggle-wrap">
+                            <label class="toggle">
+                                <input type="checkbox" id="sentimentToggle" />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span style="font-size:13px;color:var(--text-secondary);">Get weekly sentiment summary by email</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="handleUpdateProfile()">Save changes</button>
+                </div>
+
+                <div class="profile-section danger-zone">
+                    <div class="profile-section-title">Danger zone</div>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Permanently delete your account and all journal entries. This cannot be undone.</p>
+                    <button class="btn btn-danger" onclick="confirmDelete()">Delete my account</button>
+                </div>
+            </div>
+
+            <!-- ── Admin ── -->
+            <div id="adminPage" class="page">
+                <div class="section-header">
+                    <div>
+                        <div class="section-title">User management</div>
+                        <div class="section-subtitle">Admin panel — all registered users</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openAdminModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Create admin
+                    </button>
+                </div>
+
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Roles</th>
+                                <th>Sentiment</th>
+                                <th>Entries</th>
+                            </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                            <tr><td colspan="5"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /content -->
+    </main>
+</div>
+
+<!-- ──────────────── MODALS ──────────────── -->
+
+<!-- New / Edit Entry modal -->
+<div class="modal-backdrop" id="entryModal" style="display:none;" onclick="closeModalOnBg(event,'entryModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="entryModalTitle">New entry</div>
+            <button class="modal-close" onclick="closeModal('entryModal')">×</button>
+        </div>
+        <input type="hidden" id="editEntryId" />
+        <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" id="entryTitle" placeholder="What's on your mind?" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Content</label>
+            <textarea class="form-textarea" id="entryContent" placeholder="Write freely…"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Mood / Sentiment</label>
+            <select class="form-select" id="entrySentiment">
+                <option value="">— Select —</option>
+                <option value="HAPPY">😊 Happy</option>
+                <option value="SAD">😔 Sad</option>
+                <option value="ANGRY">😠 Angry</option>
+                <option value="ANXIOUS">😰 Anxious</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('entryModal')">Cancel</button>
+            <button class="btn btn-primary" id="saveEntryBtn" onclick="handleSaveEntry()">Save entry</button>
+        </div>
+    </div>
+</div>
+
+<!-- View Entry modal -->
+<div class="modal-backdrop" id="viewModal" style="display:none;" onclick="closeModalOnBg(event,'viewModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="viewEntryTitle">Entry</div>
+            <button class="modal-close" onclick="closeModal('viewModal')">×</button>
+        </div>
+        <div style="color:var(--text-muted);font-size:12px;margin-bottom:16px;" id="viewEntryDate"></div>
+        <div id="viewEntrySentimentBadge" style="margin-bottom:16px;"></div>
+        <div style="color:var(--text-secondary);font-size:14px;line-height:1.8;white-space:pre-wrap;" id="viewEntryContent"></div>
+    </div>
+</div>
+
+<!-- Create admin modal -->
+<div class="modal-backdrop" id="adminModal" style="display:none;" onclick="closeModalOnBg(event,'adminModal')">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title">Create admin user</div>
+            <button class="modal-close" onclick="closeModal('adminModal')">×</button>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Username</label>
+            <input class="form-input" id="adminUsername" placeholder="admin_username" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" id="adminPassword" type="password" placeholder="••••••••" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('adminModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="handleCreateAdmin()">Create admin</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm delete modal -->
+<div class="modal-backdrop" id="deleteModal" style="display:none;" onclick="closeModalOnBg(event,'deleteModal')">
+    <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+            <div class="modal-title">Delete account?</div>
+            <button class="modal-close" onclick="closeModal('deleteModal')">×</button>
+        </div>
+        <p style="font-size:14px;color:var(--text-secondary);line-height:1.7;">This will permanently delete your account and all journal entries. There's no way to undo this.</p>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+            <button class="btn btn-danger" onclick="handleDeleteAccount()">Delete forever</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    // ── Config ──────────────────────────────────────────────────────────────────
+    const BASE_URL = ''https://journalit-backend-zuau.onrender.com';
+
+    // ── State ────────────────────────────────────────────────────────────────────
+    let token = localStorage.getItem('jt_token') || null;
+    let currentUser = localStorage.getItem('jt_user') || null;
+    let isAdmin = JSON.parse(localStorage.getItem('jt_admin') || 'false');
+    let allEntries = [];
+    let activeFilter = 'ALL';
+
+    // ── HTTP helper ───────────────────────────────────────────────────────────────
+    async function api(method, path, body = null, auth = true) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (auth && token) headers['Authorization'] = `Bearer ${token}`;
+      const opts = { method, headers };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(BASE_URL + path, opts);
+      return res;
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────────────────────
+    function toast(msg, type = 'success') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.innerHTML = `<span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span><span>${msg}</span>`;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    // ── Auth ──────────────────────────────────────────────────────────────────────
+    function switchAuthTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+      });
+      document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+      document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
+    }
+
+    async function handleLogin() {
+      const userName = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!userName || !password) return toast('Fill in all fields.', 'error');
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const res = await api('POST', '/public/login', { userName, password }, false);
+        if (res.ok) {
+          token = await res.text();
+          localStorage.setItem('jt_token', token);
+          currentUser = userName;
+          localStorage.setItem('jt_user', userName);
+
+          // Check if admin by trying /admin/all-users
+          const adminCheck = await api('GET', '/admin/all-users');
+          isAdmin = adminCheck.ok;
+          localStorage.setItem('jt_admin', JSON.stringify(isAdmin));
+
+          initApp();
+        } else {
+          toast('Incorrect username or password.', 'error');
+        }
+      } catch(e) {
+        toast('Could not reach the server.', 'error');
+      } finally {
+        btn.disabled = false; btn.innerHTML = 'Sign in';
+      }
+    }
+
+    async function handleSignup() {
+      const userName = document.getElementById('signupUsername').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      if (!userName || !password) return toast('Username and password are required.', 'error');
+      const btn = document.getElementById('signupBtn');
+      btn.disabled = true; btn.innerHTML = '<div class="spinner"></div>';
+
+      try {
+        const res = await api('POST', '/public/signup', { userName, email, password }, false);
+        if (res.ok || res.status === 201 || res.status === 200) {
+          toast('Account created — sign in now.');
+          switchAuthTab('login');
+          document.getElementById('loginUsername').value = userName;
+        } else {
+          toast('Signup failed. Username may already exist.', 'error');
+        }
+      } catch(e) {
+        toast('Could not reach the server.', 'error');
+      } finally {
+        btn.disabled = false; btn.innerHTML = 'Create account';
+      }
+    }
+
+    function handleLogout() {
+      token = null; currentUser = null; isAdmin = false;
+      localStorage.removeItem('jt_token');
+      localStorage.removeItem('jt_user');
+      localStorage.removeItem('jt_admin');
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('authPage').style.display = 'flex';
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────────
+    function initApp() {
+      document.getElementById('authPage').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'flex';
+
+      // Sidebar user info
+      document.getElementById('sidebarUsername').textContent = currentUser;
+      document.getElementById('sidebarAvatar').textContent = (currentUser || 'U')[0].toUpperCase();
+      document.getElementById('sidebarRole').textContent = isAdmin ? 'Admin' : 'Member';
+
+      if (isAdmin) {
+        document.getElementById('adminNavLabel').style.display = '';
+        document.getElementById('adminNavBtn').style.display = '';
+      }
+
+      // Load greeting & weather
+      loadGreeting();
+
+      navigateTo('dashboard');
+    }
+
+    async function loadGreeting() {
+      try {
+        const res = await api('GET', '/user');
+        if (res.ok) {
+          const text = await res.text();
+          document.getElementById('greetingText').textContent = text;
+          // Show weather badge if weather info present
+          if (text.includes('Weather')) {
+            const match = text.match(/Weather feels like (-?\d+)/);
+            if (match) {
+              document.getElementById('weatherText').textContent = `${match[1]}°C`;
+              document.getElementById('weatherBadge').style.display = 'flex';
+            }
+          }
+        }
+      } catch(e) {}
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────────────
+    function navigateTo(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      const titles = { dashboard: 'Dashboard', journal: 'My Journal', profile: 'Profile', admin: 'User Management' };
+      document.getElementById('topbarTitle').textContent = titles[page] || page;
+
+      document.getElementById(page + 'Page').classList.add('active');
+
+      const navMap = { dashboard: 0, journal: 1, profile: 2, admin: 3 };
+      const navItems = document.querySelectorAll('.nav-item');
+      if (navItems[navMap[page]]) navItems[navMap[page]].classList.add('active');
+
+      if (page === 'dashboard') loadDashboard();
+      if (page === 'journal') loadJournal();
+      if (page === 'admin') loadAdminUsers();
+    }
+
+    // ── Journal ───────────────────────────────────────────────────────────────────
+    async function loadEntries() {
+      const res = await api('GET', '/journal');
+      if (res.ok) {
+        allEntries = await res.json();
+        return allEntries;
+      }
+      if (res.status === 404) return [];
+      throw new Error('Failed to load entries');
+    }
+
+    async function loadDashboard() {
+      try {
+        const entries = await loadEntries();
+        updateStats(entries);
+        const recent = entries.slice(-3).reverse();
+        renderEntries(recent, 'recentEntries');
+      } catch(e) {
+        document.getElementById('recentEntries').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Couldn\'t load entries</div><div class="empty-text">Make sure the backend is running.</div></div>';
+      }
+    }
+
+    async function loadJournal() {
+      try {
+        const entries = await loadEntries();
+        renderFilteredEntries();
+      } catch(e) {
+        document.getElementById('journalEntries').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Couldn\'t load entries</div></div>';
+      }
+    }
+
+    function updateStats(entries) {
+      document.getElementById('statTotal').textContent = entries.length;
+      const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
+      const thisWeek = entries.filter(e => e.date && new Date(e.date) > weekAgo).length;
+      document.getElementById('statWeek').textContent = thisWeek;
+
+      const counts = {};
+      entries.forEach(e => { if(e.sentiment) counts[e.sentiment] = (counts[e.sentiment]||0)+1; });
+      const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+      const emojiMap = { HAPPY:'😊', SAD:'😔', ANGRY:'😠', ANXIOUS:'😰' };
+      document.getElementById('statSentiment').textContent = top ? `${emojiMap[top[0]]||''} ${top[0]}` : '—';
+
+      const latest = entries.sort((a,b)=> new Date(b.date)-new Date(a.date))[0];
+      document.getElementById('statLatest').textContent = latest ? latest.title : 'No entries yet';
+    }
+
+    function setFilter(filter, el) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      renderFilteredEntries();
+    }
+
+    function renderFilteredEntries() {
+      const filtered = activeFilter === 'ALL'
+        ? allEntries
+        : allEntries.filter(e => e.sentiment === activeFilter);
+      renderEntries(filtered.slice().reverse(), 'journalEntries');
+    }
+
+    function renderEntries(entries, containerId) {
+      const container = document.getElementById(containerId);
+      if (!entries || entries.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+          <div class="empty-icon">📖</div>
+          <div class="empty-title">No entries yet</div>
+          <div class="empty-text">Start writing your first journal entry.</div>
+          <button class="btn btn-primary btn-sm" onclick="openEntryModal()">Write your first entry</button>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="entry-grid">${entries.map(e => renderEntryCard(e)).join('')}</div>`;
+    }
+
+    function renderEntryCard(entry) {
+      const date = entry.date ? new Date(entry.date).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' }) : '';
+      const sentimentBadge = entry.sentiment
+        ? `<span class="sentiment-badge sentiment-${entry.sentiment}">${{HAPPY:'😊',SAD:'😔',ANGRY:'😠',ANXIOUS:'😰'}[entry.sentiment]} ${entry.sentiment}</span>`
+        : '';
+      const preview = (entry.content || '').slice(0, 160) + ((entry.content||'').length > 160 ? '…' : '');
+      const id = entry.id?.$oid || entry.id;
+
+      return `<div class="entry-card">
+        <div class="entry-header">
+          <div class="entry-title">${escHtml(entry.title)}</div>
+          <div class="entry-meta">
+            <span class="entry-date">${date}</span>
+          </div>
+        </div>
+        ${preview ? `<div class="entry-content">${escHtml(preview)}</div>` : ''}
+        <div class="entry-footer">
+          <div>${sentimentBadge}</div>
+          <div class="entry-actions">
+            <button class="btn btn-ghost btn-sm" onclick="viewEntry('${id}')">View</button>
+            <button class="btn btn-ghost btn-sm" onclick="openEditModal('${id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEntry('${id}')">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Entry CRUD ────────────────────────────────────────────────────────────────
+    function openEntryModal() {
+      document.getElementById('entryModalTitle').textContent = 'New entry';
+      document.getElementById('editEntryId').value = '';
+      document.getElementById('entryTitle').value = '';
+      document.getElementById('entryContent').value = '';
+      document.getElementById('entrySentiment').value = '';
+      document.getElementById('saveEntryBtn').textContent = 'Save entry';
+      openModal('entryModal');
+    }
+
+    function openEditModal(id) {
+      const entry = allEntries.find(e => (e.id?.$oid || e.id) === id);
+      if (!entry) return toast('Entry not found.', 'error');
+      document.getElementById('entryModalTitle').textContent = 'Edit entry';
+      document.getElementById('editEntryId').value = id;
+      document.getElementById('entryTitle').value = entry.title || '';
+      document.getElementById('entryContent').value = entry.content || '';
+      document.getElementById('entrySentiment').value = entry.sentiment || '';
+      document.getElementById('saveEntryBtn').textContent = 'Update entry';
+      openModal('entryModal');
+    }
+
+    async function handleSaveEntry() {
+      const id = document.getElementById('editEntryId').value;
+      const title = document.getElementById('entryTitle').value.trim();
+      const content = document.getElementById('entryContent').value.trim();
+      const sentiment = document.getElementById('entrySentiment').value;
+      if (!title) return toast('Title is required.', 'error');
+
+      const btn = document.getElementById('saveEntryBtn');
+      btn.disabled = true;
+
+      try {
+        const body = { title, content, sentiment: sentiment || null };
+        let res;
+        if (id) {
+          res = await api('PUT', `/journal/id/${id}`, body);
+        } else {
+          res = await api('POST', '/journal', body);
+        }
+
+        if (res.ok || res.status === 201) {
+          toast(id ? 'Entry updated.' : 'Entry saved.');
+          closeModal('entryModal');
+          await loadEntries();
+          if (document.getElementById('dashboardPage').classList.contains('active')) loadDashboard();
+          else renderFilteredEntries();
+        } else {
+          toast('Failed to save entry.', 'error');
+        }
+      } catch(e) {
+        toast('Server error.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function deleteEntry(id) {
+      if (!confirm('Delete this entry?')) return;
+      try {
+        const res = await api('DELETE', `/journal/id/${id}`);
+        if (res.ok || res.status === 204) {
+          toast('Entry deleted.');
+          await loadEntries();
+          if (document.getElementById('dashboardPage').classList.contains('active')) loadDashboard();
+          else renderFilteredEntries();
+        } else {
+          toast('Couldn\'t delete entry.', 'error');
+        }
+      } catch(e) {
+        toast('Server error.', 'error');
+      }
+    }
+
+    function viewEntry(id) {
+      const entry = allEntries.find(e => (e.id?.$oid || e.id) === id);
+      if (!entry) return;
+      document.getElementById('viewEntryTitle').textContent = entry.title;
+      document.getElementById('viewEntryDate').textContent = entry.date ? new Date(entry.date).toLocaleString() : '';
+      const sentimentBadge = entry.sentiment
+        ? `<span class="sentiment-badge sentiment-${entry.sentiment}">${{HAPPY:'😊',SAD:'😔',ANGRY:'😠',ANXIOUS:'😰'}[entry.sentiment]} ${entry.sentiment}</span>`
+        : '';
+      document.getElementById('viewEntrySentimentBadge').innerHTML = sentimentBadge;
+      document.getElementById('viewEntryContent').textContent = entry.content || '(No content)';
+      openModal('viewModal');
+    }
+
+    // ── Profile ───────────────────────────────────────────────────────────────────
+    async function handleUpdateProfile() {
+      const userName = document.getElementById('profileUsername').value.trim();
+      const password = document.getElementById('profilePassword').value;
+      if (!userName && !password) return toast('Enter a new username or password.', 'error');
+
+      const body = {
+        userName: userName || currentUser,
+        password: password || 'UNCHANGED_PLACEHOLDER'
+      };
+
+      try {
+        const res = await api('PUT', `/user/${currentUser}`, body);
+        if (res.ok || res.status === 204) {
+          if (userName) {
+            currentUser = userName;
+            localStorage.setItem('jt_user', userName);
+            document.getElementById('sidebarUsername').textContent = userName;
+          }
+          toast('Profile updated. Please sign in again.');
+          setTimeout(handleLogout, 1500);
+        } else {
+          toast('Update failed.', 'error');
+        }
+      } catch(e) {
+        toast('Server error.', 'error');
+      }
+    }
+
+    function confirmDelete() { openModal('deleteModal'); }
+
+    async function handleDeleteAccount() {
+      try {
+        const res = await api('DELETE', '/user/user');
+        if (res.ok || res.status === 204) {
+          toast('Account deleted.');
+          closeModal('deleteModal');
+          setTimeout(handleLogout, 1000);
+        } else {
+          toast('Couldn\'t delete account.', 'error');
+        }
+      } catch(e) {
+        toast('Server error.', 'error');
+      }
+    }
+
+    // ── Admin ─────────────────────────────────────────────────────────────────────
+    async function loadAdminUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '<tr><td colspan="5"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>';
+      try {
+        const res = await api('GET', '/admin/all-users');
+        if (res.ok) {
+          const users = await res.json();
+          if (!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px;">No users found.</td></tr>';
+            return;
+          }
+          tbody.innerHTML = users.map(u => `
+            <tr>
+              <td style="font-weight:500;">${escHtml(u.userName || '—')}</td>
+              <td style="color:var(--text-secondary);">${escHtml(u.email || '—')}</td>
+              <td><div class="roles-cell">${(u.roles||[]).map(r=>`<span class="role-badge role-${r}">${r}</span>`).join('')}</div></td>
+              <td>${u.sentimentAnalysis ? '<span style="color:var(--success);font-size:12px;">Enabled</span>' : '<span style="color:var(--text-muted);font-size:12px;">Disabled</span>'}</td>
+              <td style="color:var(--text-secondary);">${(u.journalEntries||[]).length}</td>
+            </tr>
+          `).join('');
+        } else if (res.status === 403) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:30px;">Access denied. Admin role required.</td></tr>';
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px;">No users found.</td></tr>';
+        }
+      } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:30px;">Could not connect to server.</td></tr>';
+      }
+    }
+
+    function openAdminModal() {
+      document.getElementById('adminUsername').value = '';
+      document.getElementById('adminPassword').value = '';
+      openModal('adminModal');
+    }
+
+    async function handleCreateAdmin() {
+      const userName = document.getElementById('adminUsername').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      if (!userName || !password) return toast('Fill in all fields.', 'error');
+      try {
+        const res = await api('POST', '/admin/create-admin-user', { userName, password });
+        if (res.ok || res.status === 200) {
+          toast('Admin user created.');
+          closeModal('adminModal');
+          loadAdminUsers();
+        } else {
+          toast('Failed to create admin.', 'error');
+        }
+      } catch(e) {
+        toast('Server error.', 'error');
+      }
+    }
+
+    // ── Modals ────────────────────────────────────────────────────────────────────
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeModalOnBg(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+    // ── Keyboard ─────────────────────────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        ['entryModal','viewModal','adminModal','deleteModal'].forEach(closeModal);
+      }
+    });
+
+    // ── Boot ─────────────────────────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+      if (token && currentUser) {
+        initApp();
+      }
+    });
+</script>
+</body>
+</html>
