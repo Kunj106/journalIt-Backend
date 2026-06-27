@@ -25,12 +25,12 @@ public class JournaltApplication {
 	@Bean
 	// All DB functions are done using MongoDBFactory
 	// Implementation instance of PlatformTransactionManager
-	public PlatformTransactionManager add(MongoDatabaseFactory dbFactory){
+	public PlatformTransactionManager add(MongoDatabaseFactory dbFactory) {
 		return new MongoTransactionManager(dbFactory);
 	}
 
 	@Bean
-	public RestTemplate	restTemplate(){
+	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
 
